@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Swipely needs access to your photo library to help you manage and delete unwanted photos.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Swipely manages your photo library by letting you delete unwanted photos.</string>
+</dict>
+</plist>
