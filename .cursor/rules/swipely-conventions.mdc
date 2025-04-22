@@ -1,0 +1,38 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+ # Swipely Code Conventions
+
+## Naming
+
+- Use "Pro" (not "Premium") for all subscription features
+- View names should end with "View" (e.g., `ContentView`, `OnboardingView`)
+- Manager classes handle specific functionality domains (e.g., `ProManager`)
+
+## UI Guidelines
+
+- Follow iOS Human Interface Guidelines
+- Use SwiftUI for all UI components
+- Maintain consistent styling with existing design system
+- Support both light and dark mode
+- Use system SF Symbols for icons when possible
+
+## Subscription Handling
+
+- Always check subscription status before allowing Pro features
+- Use SuperwallKit's proper registration method:
+  ```swift
+  Superwall.shared.register(placement: "feature_name") { 
+      // Code that executes when user gets access
+  }
+  ```
+- Store subscription state in UserDefaults with standardized keys
+- Set Superwall subscription status appropriately after purchases
+
+## File Organization
+
+- Swift UI views stored in top-level directories
+- Models and managers in dedicated folders
+- Extensions and utilities have their own modules

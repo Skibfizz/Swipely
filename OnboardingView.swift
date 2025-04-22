@@ -7,12 +7,15 @@
 
 import SwiftUI
 import Photos
+import SuperwallKit
 
 struct OnboardingView: View {
     @Binding var hasCompletedOnboarding: Bool
     @State private var currentPage = 0
     @State private var animateBackground = false
     @State private var animateContent = false
+    @State private var fadeOutOnboarding = false
+    @State private var hasSubscribed = false
     
     // More fun and vibrant gradients
     private let gradients: [LinearGradient] = [
@@ -33,7 +36,7 @@ struct OnboardingView: View {
     ]
     
     // Fun emojis for each page
-    private let emojis = ["📱", "👆", "♻️", "🔐", "🎉"]
+    private let emojis = ["📱", "👆", "♻️", "🔐", "✨"]
     
     var body: some View {
         GeometryReader { geometry in
@@ -151,13 +154,13 @@ struct OnboardingView: View {
                         .tag(3)
                         .transition(.opacity)
                         
-                        // Page 5: Get Started
+                        // Page 5: Final features info
                         OnboardingPageView(
                             image: "checkmark.circle",
                             secondaryImage: "sparkles",
-                            emoji: "🎉",
-                            title: "You're All Set!",
-                            description: "Time to clean up those photos! Let's get swiping!",
+                            emoji: "✨",
+                            title: "Almost There!",
+                            description: "Get ready to declutter your photo library in the most enjoyable way!",
                             pageNumber: 4,
                             accentColor: accentColors[4]
                         )
@@ -194,103 +197,154 @@ struct OnboardingView: View {
                         }
                         .frame(width: geometry.size.width * 0.8)
                         
-                        // Navigation buttons - more playful
-                        HStack {
-                            // Back button - more casual
-                            Button(action: {
-                                withAnimation {
-                                    if currentPage > 0 {
-                                        currentPage -= 1
-                                    }
-                                }
-                            }) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "chevron.left")
-                                        .font(.system(size: 14, weight: .medium))
-                                    
-                                    Text("Back")
-                                        .font(.system(size: 17, weight: .medium))
-                                }
-                                .foregroundColor(currentPage > 0 ? accentColors[min(currentPage, accentColors.count - 1)] : .clear)
-                                .padding(.horizontal, 12)
-                                .frame(height: 40)
-                            }
-                            .opacity(currentPage > 0 ? 1 : 0)
-                            .disabled(currentPage == 0)
-                            
-                            Spacer()
-                            
-                            // Continue/Get Started button - more fun
-                            Button(action: {
-                                if currentPage < 4 {
-                                    // For permissions page, request photo access
-                                    if currentPage == 3 {
-                                        requestPhotoAccess()
-                                    }
-                                    withAnimation {
+                        // Navigation buttons - conditionally displayed based on page
+                        if currentPage == 0 {
+                            // Centered Next button ONLY for first page
+                            VStack {
+                                Button(action: {
+                                    withAnimation(.easeInOut(duration: 0.4)) {
                                         currentPage += 1
                                     }
-                                } else {
-                                    // On last page, complete onboarding with animation
-                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                                        hasCompletedOnboarding = true
+                                }) {
+                                    HStack(spacing: 10) {
+                                        Text("Begin")
+                                            .font(.system(size: 20, weight: .bold))
                                     }
-                                }
-                            }) {
-                                HStack(spacing: 10) {
-                                    Text(currentPage < 4 ? "Next" : "Let's Go!")
-                                        .font(.system(size: 18, weight: .bold))
-                                    
-                                    if currentPage == 4 {
-                                        Image(systemName: "arrow.right")
-                                            .font(.system(size: 15, weight: .bold))
-                                    }
-                                }
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 24)
-                                .frame(height: 52)
-                                .background(
-                                    ZStack {
-                                        RoundedRectangle(cornerRadius: 26)
-                                            .fill(
-                                                LinearGradient(
-                                                    gradient: Gradient(colors: [
-                                                        accentColors[min(currentPage, accentColors.count - 1)],
-                                                        accentColors[min(currentPage, accentColors.count - 1)].opacity(0.8)
-                                                    ]),
-                                                    startPoint: .topLeading,
-                                                    endPoint: .bottomTrailing
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 32)
+                                    .frame(height: 58)
+                                    .background(
+                                        ZStack {
+                                            RoundedRectangle(cornerRadius: 26)
+                                                .fill(
+                                                    LinearGradient(
+                                                        gradient: Gradient(colors: [
+                                                            accentColors[0],
+                                                            accentColors[0].opacity(0.8)
+                                                        ]),
+                                                        startPoint: .topLeading,
+                                                        endPoint: .bottomTrailing
+                                                    )
                                                 )
-                                            )
+                                        }
+                                    )
+                                    .shadow(color: accentColors[0].opacity(0.4), radius: 15, x: 0, y: 8)
+                                }
+                                .transition(.opacity)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.horizontal, 25)
+                            .transition(.opacity)
+                        } else {
+                            // Regular back/next buttons for other pages
+                            HStack {
+                                // Back button - more casual
+                                Button(action: {
+                                    withAnimation(.easeInOut(duration: 0.4)) {
+                                        if currentPage > 0 {
+                                            currentPage -= 1
+                                        }
+                                    }
+                                }) {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "chevron.left")
+                                            .font(.system(size: 14, weight: .medium))
                                         
-                                        // Subtle pattern
-                                        if currentPage == 4 {
-                                            HStack(spacing: 4) {
-                                                ForEach(0..<8) { _ in
-                                                    Circle()
-                                                        .fill(Color.white.opacity(0.15))
-                                                        .frame(width: 4, height: 4)
+                                        Text("Back")
+                                            .font(.system(size: 17, weight: .medium))
+                                    }
+                                    .foregroundColor(accentColors[min(currentPage, accentColors.count - 1)])
+                                    .padding(.horizontal, 12)
+                                    .frame(height: 40)
+                                }
+                                
+                                Spacer()
+                                
+                                // Continue button - show Superwall paywall on final page
+                                Button(action: {
+                                    if currentPage < 4 {
+                                        // For permissions page, request photo access
+                                        if currentPage == 3 {
+                                            requestPhotoAccess()
+                                        }
+                                        withAnimation(.easeInOut(duration: 0.4)) {
+                                            currentPage += 1
+                                        }
+                                    } else if currentPage == 4 {
+                                        // Final page - show Superwall paywall
+                                        Superwall.shared.register(placement: "onboarding_paywall") {
+                                            // This only executes if user gets access
+                                            UserDefaults.standard.set(true, forKey: "hasSubscribed")
+                                            Superwall.shared.subscriptionStatus = .active([])
+                                            hasSubscribed = true
+                                        }
+                                    }
+                                }) {
+                                    HStack(spacing: 10) {
+                                        Text(currentPage == 4 ? "Get Started" : "Next")
+                                            .font(.system(size: 18, weight: .bold))
+                                    }
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 24)
+                                    .frame(height: 52)
+                                    .background(
+                                        ZStack {
+                                            RoundedRectangle(cornerRadius: 26)
+                                                .fill(
+                                                    LinearGradient(
+                                                        gradient: Gradient(colors: [
+                                                            accentColors[min(currentPage, accentColors.count - 1)],
+                                                            accentColors[min(currentPage, accentColors.count - 1)].opacity(0.8)
+                                                        ]),
+                                                        startPoint: .topLeading,
+                                                        endPoint: .bottomTrailing
+                                                    )
+                                                )
+                                            
+                                            // Subtle pattern
+                                            if currentPage == 4 {
+                                                HStack(spacing: 4) {
+                                                    ForEach(0..<8) { _ in
+                                                        Circle()
+                                                            .fill(Color.white.opacity(0.15))
+                                                            .frame(width: 4, height: 4)
+                                                    }
                                                 }
                                             }
                                         }
-                                    }
-                                )
-                                .shadow(color: accentColors[min(currentPage, accentColors.count - 1)].opacity(0.4), radius: 15, x: 0, y: 8)
-                                .scaleEffect(currentPage == 4 ? 1.05 : 1.0)
-                                .animation(.easeInOut, value: currentPage)
+                                    )
+                                    .shadow(color: accentColors[min(currentPage, accentColors.count - 1)].opacity(0.4), radius: 15, x: 0, y: 8)
+                                    .animation(.easeInOut, value: currentPage)
+                                }
                             }
+                            .padding(.horizontal, 25)
+                            .transition(.opacity)
                         }
-                        .padding(.horizontal, 25)
                     }
+                    .animation(.easeInOut(duration: 0.4), value: currentPage)
                     .padding(.bottom, 40)
                 }
             }
+            .opacity(fadeOutOnboarding ? 0 : 1)
             .onAppear {
                 // Start animations
                 animateBackground = true
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     withAnimation {
                         animateContent = true
+                    }
+                }
+            }
+            .onChange(of: hasSubscribed) { newValue in
+                if newValue {
+                    // User has subscribed, complete onboarding
+                    withAnimation(.easeOut(duration: 0.8)) {
+                        fadeOutOnboarding = true
+                    }
+                    
+                    // Delay setting hasCompletedOnboarding until fade is complete
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                        hasCompletedOnboarding = true
                     }
                 }
             }
@@ -301,6 +355,30 @@ struct OnboardingView: View {
         PHPhotoLibrary.requestAuthorization { status in
             // We'll still proceed regardless of the status
             // The status will be handled in ContentView
+        }
+    }
+}
+
+// Feature row component for feature lists
+struct FeatureRow: View {
+    let icon: String
+    let text: String
+    let color: Color
+    
+    var body: some View {
+        HStack(spacing: 15) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(width: 30, height: 30)
+                .background(
+                    Circle()
+                        .fill(color)
+                )
+            
+            Text(text)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color(.darkText))
         }
     }
 }

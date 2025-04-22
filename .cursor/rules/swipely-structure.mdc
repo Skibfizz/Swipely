@@ -1,0 +1,50 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Swipely App Structure
+
+Swipely is a photo organization app that lets users swipe to keep or delete photos. The main views are:
+
+- [ContentView.swift](mdc:ContentView.swift) - The main app interface with photo swiping functionality
+- [OnboardingView.swift](mdc:OnboardingView.swift) - Introduction screens for new users
+- [SettingsView.swift](mdc:SettingsView.swift) - User settings including subscription management
+
+## Subscription Management
+
+The app uses a "Pro" subscription model (previously called "Premium"):
+
+- Subscription status is managed through [ProManager.swift](mdc:ProManager.swift)
+- Paywalls are implemented using SuperwallKit
+- Users can manage their subscription through Settings
+
+## SuperwallKit Integration
+
+Important notes for the paywall/subscription implementation:
+
+- Import using `import SuperwallKit` but access using `Superwall.shared`
+- Correct method is `register(placement: "feature_name")` not `register(event:)`
+- Subscription status must be properly set for paywalls to show
+
+Example:
+```swift
+// Check if user is pro subscriber
+if !isProSubscriber {
+    // Show paywall when action attempted
+    Superwall.shared.register(placement: "feature_name") {
+        // This code runs only if user gets access
+        performFeatureAction()
+    }
+    return
+}
+```
+
+Subscription status should be set properly:
+```swift
+// For non-subscribers
+Superwall.shared.subscriptionStatus = .inactive
+
+// For subscribers
+Superwall.shared.subscriptionStatus = .active([]) // For v4+
+```
